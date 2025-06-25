@@ -1,0 +1,709 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 17.2
+-- Dumped by pg_dump version 17.2
+
+-- Started on 2025-06-25 11:36:05
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
+
+--
+-- TOC entry 4929 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+--
+-- TOC entry 872 (class 1247 OID 16752)
+-- Name: facility_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.facility_type AS ENUM (
+    'Hospital',
+    'Blood Bank',
+    'Donation Center'
+);
+
+
+ALTER TYPE public.facility_type OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 227 (class 1259 OID 33108)
+-- Name: blood_pack; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.blood_pack (
+    pack_id integer NOT NULL,
+    blood_type character varying(10),
+    expiry_date date,
+    collection_date integer,
+    hospital_id integer
+);
+
+
+ALTER TABLE public.blood_pack OWNER TO postgres;
+
+--
+-- TOC entry 223 (class 1259 OID 16766)
+-- Name: blood_receiver; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.blood_receiver (
+    receiver_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    blood_type character varying(10) NOT NULL,
+    hospital_id integer,
+    date_column_name date
+);
+
+
+ALTER TABLE public.blood_receiver OWNER TO postgres;
+
+--
+-- TOC entry 221 (class 1259 OID 16726)
+-- Name: donation_event; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.donation_event (
+    event_id integer NOT NULL,
+    event_date date,
+    event_notification_sent boolean,
+    event_address text
+);
+
+
+ALTER TABLE public.donation_event OWNER TO postgres;
+
+--
+-- TOC entry 225 (class 1259 OID 33073)
+-- Name: donation_history; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.donation_history (
+    donation_id integer NOT NULL,
+    no_of_donations integer,
+    donation_type character(100),
+    donated_at character varying(50)
+);
+
+
+ALTER TABLE public.donation_history OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 33118)
+-- Name: donation_outcome; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.donation_outcome (
+    receiver_id integer,
+    status character varying(50),
+    reason text
+);
+
+
+ALTER TABLE public.donation_outcome OWNER TO postgres;
+
+--
+-- TOC entry 218 (class 1259 OID 16694)
+-- Name: donation_type; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.donation_type (
+    donation_type_id integer NOT NULL,
+    type_description character varying(100)
+);
+
+
+ALTER TABLE public.donation_type OWNER TO postgres;
+
+--
+-- TOC entry 219 (class 1259 OID 16699)
+-- Name: donor; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.donor (
+    donor_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    blood_type character varying(10) NOT NULL,
+    address text,
+    age integer,
+    dob date,
+    gender character varying(10)
+);
+
+
+ALTER TABLE public.donor OWNER TO postgres;
+
+--
+-- TOC entry 217 (class 1259 OID 16687)
+-- Name: donor_center; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.donor_center (
+    center_id integer NOT NULL,
+    address text
+);
+
+
+ALTER TABLE public.donor_center OWNER TO postgres;
+
+--
+-- TOC entry 220 (class 1259 OID 16716)
+-- Name: donor_medical_info; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.donor_medical_info (
+    donor_id integer NOT NULL,
+    pre_existing_conditions character varying(255),
+    blood_pressure character varying(50),
+    hemoglobin_level numeric(5,2),
+    donated_before boolean,
+    pulse_rate integer,
+    temperature numeric(5,2),
+    eligible_to_donate boolean
+);
+
+
+ALTER TABLE public.donor_medical_info OWNER TO postgres;
+
+--
+-- TOC entry 222 (class 1259 OID 16759)
+-- Name: hospital_bloodbank; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.hospital_bloodbank (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    address text,
+    contact_information character varying(255)
+);
+
+
+ALTER TABLE public.hospital_bloodbank OWNER TO postgres;
+
+--
+-- TOC entry 226 (class 1259 OID 33083)
+-- Name: notification; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.notification (
+    emergency_description text NOT NULL,
+    hospital_id integer,
+    center_id integer
+);
+
+
+ALTER TABLE public.notification OWNER TO postgres;
+
+--
+-- TOC entry 224 (class 1259 OID 16776)
+-- Name: rewards; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.rewards (
+    donor_id integer,
+    reward_type character varying(255),
+    reward_details text
+);
+
+
+ALTER TABLE public.rewards OWNER TO postgres;
+
+--
+-- TOC entry 4922 (class 0 OID 33108)
+-- Dependencies: 227
+-- Data for Name: blood_pack; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.blood_pack (pack_id, blood_type, expiry_date, collection_date, hospital_id) FROM stdin;
+1001	A+	2025-06-10	20250410	1
+1002	B-	2025-06-12	20250411	2
+1003	O+	2025-06-15	20250412	3
+1004	AB-	2025-06-18	20250413	4
+1005	A-	2025-06-20	20250414	5
+1006	B+	2025-06-22	20250415	6
+1007	O-	2025-06-25	20250416	7
+1008	AB+	2025-06-28	20250417	8
+1009	B-	2025-07-01	20250418	9
+1010	O+	2025-07-03	20250419	10
+2001	A+	2025-06-10	20250410	1
+2002	A+	2025-06-12	20250411	1
+2003	B-	2025-06-15	20250412	2
+2004	B-	2025-06-17	20250413	2
+2005	O+	2025-06-20	20250414	3
+2006	O+	2025-06-22	20250415	3
+2007	AB-	2025-06-25	20250416	4
+2008	AB-	2025-06-27	20250417	4
+2009	A-	2025-06-30	20250418	5
+2010	A-	2025-07-02	20250419	5
+2011	B+	2025-07-04	20250420	6
+2012	B+	2025-07-06	20250421	6
+2013	O-	2025-07-08	20250422	7
+2014	O-	2025-07-10	20250423	7
+2015	AB+	2025-07-12	20250424	8
+2016	AB+	2025-07-14	20250425	8
+2017	B-	2025-07-16	20250426	9
+2018	B-	2025-07-18	20250427	9
+2019	O+	2025-07-20	20250428	10
+2020	O+	2025-07-22	20250429	10
+1	A+	2025-07-01	2011	1
+2	A+	2025-07-05	2009	1
+3	B-	2025-06-20	2007	2
+4	B-	2025-06-22	2005	2
+5	O+	2025-07-10	2003	3
+6	O+	2025-07-12	2001	3
+7	AB-	2025-08-01	1999	4
+8	AB-	2025-08-05	1997	4
+9	A-	2025-06-15	1995	5
+10	A-	2025-06-18	1993	5
+11	B+	2025-06-10	1991	6
+12	B+	2025-06-15	2018	6
+13	O-	2025-07-05	2016	7
+14	O-	2025-07-08	2014	7
+15	AB+	2025-07-20	2012	8
+16	AB+	2025-07-22	2010	8
+17	B-	2025-06-25	2008	9
+18	B-	2025-06-30	2006	9
+19	O+	2025-07-15	2004	10
+20	O+	2025-07-18	2002	10
+\.
+
+
+--
+-- TOC entry 4918 (class 0 OID 16766)
+-- Dependencies: 223
+-- Data for Name: blood_receiver; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.blood_receiver (receiver_id, name, blood_type, hospital_id, date_column_name) FROM stdin;
+1	Sunita Rao	A+	1	2025-04-15
+2	Rakesh Nair	B-	2	2025-04-16
+3	Anjali Gupta	O+	3	2025-04-17
+4	Nikhil Jain	AB-	4	2025-04-18
+5	Deepa Singh	A-	5	2025-04-19
+6	Harsh Mehta	B+	6	2025-04-20
+7	Saira Ali	O-	7	2025-04-21
+8	Karan Yadav	AB+	8	2025-04-22
+9	Rekha Das	B-	9	2025-04-23
+10	Aditya Roy	O+	10	2025-04-24
+11	Sunita Rao	A+	11	2025-04-15
+12	Rakesh Nair	B-	12	2025-04-16
+13	Anjali Gupta	O+	13	2025-04-17
+14	Nikhil Jain	AB-	14	2025-04-18
+15	Deepa Singh	A-	15	2025-04-19
+16	Harsh Mehta	B+	16	2025-04-20
+17	Saira Ali	O-	17	2025-04-21
+18	Karan Yadav	AB+	18	2025-04-22
+19	Rekha Das	B-	19	2025-04-23
+20	Aditya Roy	O+	20	2025-04-24
+\.
+
+
+--
+-- TOC entry 4916 (class 0 OID 16726)
+-- Dependencies: 221
+-- Data for Name: donation_event; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.donation_event (event_id, event_date, event_notification_sent, event_address) FROM stdin;
+1	2025-04-01	t	Community Hall, 5th Main, Indiranagar, Bengaluru, Karnataka, 560038
+2	2025-04-03	t	Town Hall, 12 Shakespeare Sarani, Kolkata, West Bengal, 700071
+3	2025-04-05	f	Health Center, Law College Road, Pune, Maharashtra, 411004
+4	2025-04-07	t	YMCA Hall, Anna Salai, Chennai, Tamil Nadu, 600002
+5	2025-04-09	t	Red Cross Society, MI Road, Jaipur, Rajasthan, 302001
+6	2025-04-11	f	Community Center, Road No. 12, Banjara Hills, Hyderabad, Telangana, 500034
+7	2025-04-13	t	Sector 17 Plaza, Chandigarh, UT, 160017
+8	2025-04-15	t	Don Bosco Hall, Dadar West, Mumbai, Maharashtra, 400028
+9	2025-04-17	t	RTC Community Hall, RTC X Roads, Secunderabad, Telangana, 500020
+10	2025-04-19	f	Kaiserbagh Community Hall, Hazratganj, Lucknow, Uttar Pradesh, 226001
+\.
+
+
+--
+-- TOC entry 4920 (class 0 OID 33073)
+-- Dependencies: 225
+-- Data for Name: donation_history; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.donation_history (donation_id, no_of_donations, donation_type, donated_at) FROM stdin;
+1	3	Whole Blood                                                                                         	AIIMS, New Delhi
+3	4	Plasma                                                                                              	Apollo, Bengaluru
+4	1	Platelet                                                                                            	Tata Memorial, Mumbai
+5	5	Whole Blood                                                                                         	Narayana, Kolkata
+6	2	Plasma                                                                                              	Fortis, Noida
+7	1	Platelet                                                                                            	PGIMER, Chandigarh
+8	6	Whole Blood                                                                                         	KIMS, Hyderabad
+9	3	Plasma                                                                                              	Medanta, Gurgaon
+10	2	Whole Blood                                                                                         	Max, Patna
+2	0	Whole Blood                                                                                         	CMC, Vellore
+\.
+
+
+--
+-- TOC entry 4923 (class 0 OID 33118)
+-- Dependencies: 228
+-- Data for Name: donation_outcome; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.donation_outcome (receiver_id, status, reason) FROM stdin;
+1	Successful	Timely transfusion, matched type
+2	Successful	Urgent case, handled well
+3	Unsuccessful	Expired blood pack
+4	Successful	Cross-match cleared
+5	Successful	Good compatibility
+6	Unsuccessful	High fever during transfusion
+7	Successful	Emergency handled successfully
+8	Unsuccessful	AB+ blood pack shortage
+9	Successful	Routine surgery supported
+10	Successful	Donor-recipient match confirmed
+11	Success	Timely transfusion, matched type
+12	Success	Urgent case, handled well
+13	Success	Blood used in surgery
+14	Success	Emergency transfusion
+15	Success	Routine transfusion
+16	Success	Mass transfusion event
+17	Success	Blood received during emergency
+18	Success	Blood transfused in ICU
+19	Success	Emergency case handled well
+20	Success	Routine case transfused successfully
+\.
+
+
+--
+-- TOC entry 4913 (class 0 OID 16694)
+-- Dependencies: 218
+-- Data for Name: donation_type; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.donation_type (donation_type_id, type_description) FROM stdin;
+1	Whole Blood
+2	Platelet
+3	Plasma
+4	Double Red Cells
+5	Autologous
+6	Directed
+7	Apheresis
+8	Leukoreduced
+9	Irradiated
+10	Granulocyte
+\.
+
+
+--
+-- TOC entry 4914 (class 0 OID 16699)
+-- Dependencies: 219
+-- Data for Name: donor; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.donor (donor_id, name, blood_type, address, age, dob, gender) FROM stdin;
+1	Aarav Sharma	A+	123 MG Road, Bengaluru, Karnataka, 560001	30	1995-01-15	Female
+2	Riya Verma	B-	45 Park Street, Kolkata, West Bengal, 700016	28	1997-06-10	Male
+3	Kabir Joshi	O+	88 FC Road, Pune, Maharashtra, 411004	35	1989-03-22	Male
+4	Meera Iyer	AB+	12 Mount Road, Chennai, Tamil Nadu, 600002	26	1998-11-05	Female
+5	Devansh Mehta	A-	76 C-Scheme, Jaipur, Rajasthan, 302001	40	1985-09-18	Male
+6	Ishita Rao	B+	34 Banjara Hills, Hyderabad, Telangana, 500034	22	2002-07-30	Female
+7	Aditya Kapoor	O-	90 Sector 17, Chandigarh, UT, 160017	31	1993-12-25	Male
+8	Sneha Nair	AB-	101 Marine Drive, Mumbai, Maharashtra, 400020	29	1995-04-09	Female
+9	Nikhil Reddy	A+	67 RTC X Road, Secunderabad, Telangana, 500020	34	1990-10-01	Male
+10	Ananya Singh	B-	56 Hazratganj, Lucknow, Uttar Pradesh, 226001	27	1997-05-17	Female
+\.
+
+
+--
+-- TOC entry 4912 (class 0 OID 16687)
+-- Dependencies: 217
+-- Data for Name: donor_center; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.donor_center (center_id, address) FROM stdin;
+1	AIIMS, New Delhi
+2	CMC, Vellore
+3	Apollo Hospital, Bengaluru
+4	Tata Memorial, Mumbai
+5	Narayana Health, Kolkata
+6	Fortis Hospital, Noida
+7	PGIMER, Chandigarh
+8	KIMS, Hyderabad
+9	Medanta, Gurgaon
+10	Max Hospital, Patna
+\.
+
+
+--
+-- TOC entry 4915 (class 0 OID 16716)
+-- Dependencies: 220
+-- Data for Name: donor_medical_info; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.donor_medical_info (donor_id, pre_existing_conditions, blood_pressure, hemoglobin_level, donated_before, pulse_rate, temperature, eligible_to_donate) FROM stdin;
+1	None	120/80	13.50	t	72	36.60	t
+2	Asthma	130/85	12.80	t	75	37.00	t
+3	Diabetes	125/82	13.20	t	80	36.50	f
+4	None	118/79	14.00	f	70	36.70	t
+5	Hypertension	140/90	11.50	t	78	37.20	f
+6	None	122/81	13.80	f	76	36.40	t
+7	Thalassemia Trait	115/76	12.50	t	74	36.80	f
+8	None	119/78	14.20	t	69	36.60	t
+9	None	121/80	13.10	t	73	36.90	t
+10	Anemia	117/75	10.90	f	77	37.10	f
+\.
+
+
+--
+-- TOC entry 4917 (class 0 OID 16759)
+-- Dependencies: 222
+-- Data for Name: hospital_bloodbank; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.hospital_bloodbank (id, name, address, contact_information) FROM stdin;
+1	Manipal Hospital	98 HAL Old Airport Road, Bengaluru, Karnataka, 560017	08022223333
+2	Red Cross Blood Bank	1 Red Cross Road, New Delhi, Delhi, 110001	01123716441
+3	Ruby Hall Clinic	40 Sassoon Road, Pune, Maharashtra, 411001	02026123391
+4	Jeevan Jyoti Blood Bank	M.G. Road, Allahabad, Uttar Pradesh, 211003	05322400200
+5	SMS Hospital	Jawaharlal Nehru Marg, Jaipur, Rajasthan, 302004	01412377471
+6	Osmania General Blood Bank	Afzal Gunj, Hyderabad, Telangana, 500012	04024525629
+7	Apollo Hospital	21 Greams Lane, Off Greams Road, Chennai, Tamil Nadu, 600006	04428293333
+8	Care Blood Center	7-1-71/A, Dharam Karan Road, Ameerpet, Hyderabad, Telangana, 500016	04023735000
+9	KGMU Hospital	Chowk, Lucknow, Uttar Pradesh, 226003	05222258441
+10	Donor Seva Kendra	Sector 34, Chandigarh, UT, 160022	01722667890
+11	Manipal Hospital	Bangalore, Karnataka, India	080-22222000
+12	Sree Chitra Tirunal	Trivandrum, Kerala, India	0471-2525982
+13	Fortis La Femme	New Delhi, India	011-41750910
+14	Jaypee Hospital	Noida, Uttar Pradesh, India	0120-2401555
+15	Sir Ganga Ram Hospital	Rajinder Nagar, New Delhi, India	011-42505050
+16	Kokilaben Dhirubhai Ambani Hospital	Andheri, Mumbai, Maharashtra, India	022-30913091
+17	Mahatma Gandhi Memorial Hospital	Indore, Madhya Pradesh, India	0731-2591222
+18	Sri Ramachandra Medical Center	Chennai, Tamil Nadu, India	044-24768000
+19	Jaslok Hospital	Mumbai, Maharashtra, India	022-66527000
+20	Breach Candy Hospital	Mumbai, Maharashtra, India	022-23633000
+\.
+
+
+--
+-- TOC entry 4921 (class 0 OID 33083)
+-- Dependencies: 226
+-- Data for Name: notification; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.notification (emergency_description, hospital_id, center_id) FROM stdin;
+Urgent requirement for O- blood for accident case	1	1
+Rare AB- blood needed for surgery	2	4
+O+ stock running low post-festival	3	3
+Need B- units for thalassemia patient	4	6
+Emergency liver transplant – A+ blood needed	5	5
+Mass casualty event – blood units required	6	2
+Platelet shortage after dengue outbreak	7	7
+Rare Bombay blood group request	8	8
+Critical maternity case – AB+ required	9	9
+Neonatal ICU – A- for exchange transfusion	10	10
+\.
+
+
+--
+-- TOC entry 4919 (class 0 OID 16776)
+-- Dependencies: 224
+-- Data for Name: rewards; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.rewards (donor_id, reward_type, reward_details) FROM stdin;
+1	Free Health Checkup	Annual free checkup
+2	Movie Tickets	2 tickets for local cinema
+3	Gift Card	$20 Gift Card
+4	Blood Donor Badge	Gold badge
+5	Priority Booking	Priority for next appointment
+6	Discount Coupon	10% off on health supplements
+7	Appreciation Letter	Letter from health dept.
+8	Event Pass	Entry to donor gala
+9	T-shirt	Thank you T-shirt
+10	Water Bottle	Branded steel bottle
+\.
+
+
+--
+-- TOC entry 4758 (class 2606 OID 33112)
+-- Name: blood_pack blood_pack_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.blood_pack
+    ADD CONSTRAINT blood_pack_pkey PRIMARY KEY (pack_id);
+
+
+--
+-- TOC entry 4754 (class 2606 OID 16770)
+-- Name: blood_receiver blood_receiver_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.blood_receiver
+    ADD CONSTRAINT blood_receiver_pkey PRIMARY KEY (receiver_id);
+
+
+--
+-- TOC entry 4750 (class 2606 OID 16732)
+-- Name: donation_event donation_event_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donation_event
+    ADD CONSTRAINT donation_event_pkey PRIMARY KEY (event_id);
+
+
+--
+-- TOC entry 4756 (class 2606 OID 33077)
+-- Name: donation_history donation_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donation_history
+    ADD CONSTRAINT donation_history_pkey PRIMARY KEY (donation_id);
+
+
+--
+-- TOC entry 4744 (class 2606 OID 16698)
+-- Name: donation_type donation_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donation_type
+    ADD CONSTRAINT donation_type_pkey PRIMARY KEY (donation_type_id);
+
+
+--
+-- TOC entry 4742 (class 2606 OID 16693)
+-- Name: donor_center donor_center_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donor_center
+    ADD CONSTRAINT donor_center_pkey PRIMARY KEY (center_id);
+
+
+--
+-- TOC entry 4748 (class 2606 OID 16720)
+-- Name: donor_medical_info donor_medical_info_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donor_medical_info
+    ADD CONSTRAINT donor_medical_info_pkey PRIMARY KEY (donor_id);
+
+
+--
+-- TOC entry 4746 (class 2606 OID 16705)
+-- Name: donor donor_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donor
+    ADD CONSTRAINT donor_pkey PRIMARY KEY (donor_id);
+
+
+--
+-- TOC entry 4752 (class 2606 OID 16765)
+-- Name: hospital_bloodbank hospital_bloodbank_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.hospital_bloodbank
+    ADD CONSTRAINT hospital_bloodbank_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4765 (class 2606 OID 33113)
+-- Name: blood_pack blood_pack_hospital_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.blood_pack
+    ADD CONSTRAINT blood_pack_hospital_id_fkey FOREIGN KEY (hospital_id) REFERENCES public.hospital_bloodbank(id);
+
+
+--
+-- TOC entry 4760 (class 2606 OID 16771)
+-- Name: blood_receiver blood_receiver_hospital_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.blood_receiver
+    ADD CONSTRAINT blood_receiver_hospital_id_fkey FOREIGN KEY (hospital_id) REFERENCES public.hospital_bloodbank(id);
+
+
+--
+-- TOC entry 4762 (class 2606 OID 33078)
+-- Name: donation_history donation_history_donation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donation_history
+    ADD CONSTRAINT donation_history_donation_id_fkey FOREIGN KEY (donation_id) REFERENCES public.donor(donor_id);
+
+
+--
+-- TOC entry 4766 (class 2606 OID 33123)
+-- Name: donation_outcome donation_outcome_receiver_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donation_outcome
+    ADD CONSTRAINT donation_outcome_receiver_id_fkey FOREIGN KEY (receiver_id) REFERENCES public.blood_receiver(receiver_id);
+
+
+--
+-- TOC entry 4759 (class 2606 OID 16721)
+-- Name: donor_medical_info donor_medical_info_donor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.donor_medical_info
+    ADD CONSTRAINT donor_medical_info_donor_id_fkey FOREIGN KEY (donor_id) REFERENCES public.donor(donor_id);
+
+
+--
+-- TOC entry 4763 (class 2606 OID 33093)
+-- Name: notification notification_center_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification
+    ADD CONSTRAINT notification_center_id_fkey FOREIGN KEY (center_id) REFERENCES public.donor_center(center_id);
+
+
+--
+-- TOC entry 4764 (class 2606 OID 33088)
+-- Name: notification notification_hospital_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.notification
+    ADD CONSTRAINT notification_hospital_id_fkey FOREIGN KEY (hospital_id) REFERENCES public.hospital_bloodbank(id);
+
+
+--
+-- TOC entry 4761 (class 2606 OID 16781)
+-- Name: rewards rewards_donor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.rewards
+    ADD CONSTRAINT rewards_donor_id_fkey FOREIGN KEY (donor_id) REFERENCES public.donor(donor_id);
+
+
+-- Completed on 2025-06-25 11:36:05
+
+--
+-- PostgreSQL database dump complete
+--
+
